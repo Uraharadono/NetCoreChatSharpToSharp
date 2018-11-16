@@ -46,7 +46,7 @@ namespace SignalRWebClient.Controllers
 
 
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<ActionResult<IEnumerable<string>>> Get()
         {
             // this.HubContext.Clients.All.SendAsync("SendMessage", "nesto");
 
@@ -70,7 +70,12 @@ namespace SignalRWebClient.Controllers
             //});
 
             ConnectToServer();
-            SendMessage("Muhamed", "From Client");
+
+            // line below is to send message only, and not receive anything back
+            // SendMessage("Muhamed", "From Client");
+            
+            // line below sends message and receives string response
+            string response = await SendMessageReceiveResponse("Muhamed", "From Client");
 
             return new string[] { "value1", "value2" };
         }
@@ -98,6 +103,20 @@ namespace SignalRWebClient.Controllers
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+        }
+
+        private async Task<string> SendMessageReceiveResponse(string user, string message)
+        {
+            try
+            {
+                var result =  await connection.InvokeAsync<string>("ReceiveMessageSendValue", user, message);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                messagesList.Items.Add(ex.Message);
+                return null;
             }
         }
 
